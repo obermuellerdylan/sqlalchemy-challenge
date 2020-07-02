@@ -9,7 +9,7 @@ from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, func
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, render_template
 
 
 engine = create_engine("sqlite:///Resources/hawaii.sqlite")
@@ -30,15 +30,16 @@ def welcome():
     return (
         f'Welcome to Hawaii Weather Service!<br/>'
         f'Available Routes:<br/>'
+        f'-----------------------------<br/v>'
         f'/api/v1.0/precipitation<br/>'
         f'/api/v1.0/stations<br/>'
         f'/api/v1.0/tobs<br/>'
         f'/api/v1.0/start_date<br/>'
-        f'    Format: /api/v1.0/yyyy-mm-dd<br/>'
-        f'    Example: /api/v1.0/2000-01-01<br/>'
+        f'----Format: /api/v1.0/yyyy-mm-dd<br/>'
+        f'----Example: /api/v1.0/2000-01-01<br/>'
         f'/api/v1.0/start_date/end_date<br/>'
-        f'    Format: /api/v1.0/yyyy-mm-dd/yyyy-mm-dd<br/>'
-        f'    Example: /api/v1.0/2000-01-01/2000-01-10<br/>'
+        f'----Format: /api/v1.0/yyyy-mm-dd/yyyy-mm-dd<br/>'
+        f'----Example: /api/v1.0/2010-01-01/2010-01-10<br/>'
     )
 
 @app.route("/api/v1.0/precipitation")
@@ -116,8 +117,10 @@ def start_rt(start):
         start_dict['avg temp'] = avg
         all_start.append(start_dict)
 
-    return jsonify(all_start)
-#return jsonify({"error": "Date not found."}), 404
+    if date_start >= dt.date(2010, 1, 1) and date_start <= dt.date(2017, 8, 23):
+        return jsonify(all_start)
+    else:
+        return jsonify({"error": "Date input incorrectly or does not exist in dataset."}), 404
 
 @app.route("/api/v1.0/<start>/<end>")
 def end(start, end):
@@ -139,7 +142,15 @@ def end(start, end):
         end_dict['avg temp'] = avg
         all_end.append(end_dict)
 
-    return jsonify(all_end)
+    if date_start >= dt.date(2010, 1, 1) and date_end <= dt.date(2017, 8, 23) and date_start < date_end:
+        return jsonify(all_end)
+    else:
+        return jsonify({"error": "Date input incorrectly or does not exist in dataset."}), 404
+
+@app.errorhandler(ValueError)
+def input_incorrectly(e):
+    # note that we set the 404 status explicitly
+    return jsonify({"error": f"Date input incorrectly or does not exist in dataset."}), 404
 
 if __name__ == "__main__":
     app.run(debug=True)
