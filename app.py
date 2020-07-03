@@ -117,7 +117,7 @@ def start_rt(start):
         start_dict['avg temp'] = avg
         all_start.append(start_dict)
 
-    if date_start >= dt.date(2010, 1, 1) and date_start <= dt.date(2017, 8, 23):
+    if date >= dt.date(2010, 1, 1) and date <= dt.date(2017, 8, 23):
         return jsonify(all_start)
     else:
         return jsonify({"error": "Date input incorrectly or does not exist in dataset."}), 404
